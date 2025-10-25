@@ -1,0 +1,56 @@
+services:
+  - type: web
+    name: travel-booking-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        fromDatabase:
+          name: travel-booking-db
+          property: connectionString
+      - key: JWT_SECRET
+        value: your_jwt_secret_key_here
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: STRIPE_SECRET_KEY
+        value: sk_test_your_stripe_secret_key
+      - key: STRIPE_PUBLISHABLE_KEY
+        value: pk_test_your_stripe_publishable_key
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_USER
+        value: your_email@gmail.com
+      - key: EMAIL_PASS
+        value: your_app_password
+      - key: CLOUDINARY_CLOUD_NAME
+        value: your_cloud_name
+      - key: CLOUDINARY_API_KEY
+        value: your_api_key
+      - key: CLOUDINARY_API_SECRET
+        value: your_api_secret
+      - key: PORT
+        value: 10000
+      - key: CLIENT_URL
+        value: https://travel-booking-frontend.vercel.app
+
+  - type: web
+    name: travel-booking-frontend
+    env: static
+    plan: free
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/build
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://travel-booking-api.onrender.com/api
+
+databases:
+  - name: travel-booking-db
+    plan: free
+    databaseName: travel_booking
+    user: travel_user
