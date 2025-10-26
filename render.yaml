@@ -1,17 +1,18 @@
 services:
   - type: web
-    name: travel-booking-api
+    name: qwenfly-api
     env: node
     plan: free
-    buildCommand: cd server && npm install
-    startCommand: cd server && npm start
+    rootDir: ./server
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
         value: mongodb+srv://qwenfly:Wd9AIAr623wWjCM4@qwenfly-cluster.kpz94eq.mongodb.net/travel-booking?retryWrites=true&w=majority
       - key: JWT_SECRET
-        value: your_jwt_secret_key_here
+        value: qwenfly_super_secret_jwt_key_2024
       - key: JWT_EXPIRE
         value: 7d
       - key: STRIPE_SECRET_KEY
@@ -45,19 +46,4 @@ services:
       - key: HOTEL_API_BASE_URL
         value: https://api.makcorps.com
 
-  - type: web
-    name: travel-booking-frontend
-    env: static
-    plan: free
-    buildCommand: cd client && npm install && npm run build
-    staticPublishPath: ./client/build
-    envVars:
-      - key: REACT_APP_API_URL
-        value: https://travel-booking-api.onrender.com/api
 
-# Using MongoDB Atlas instead of Render's database
-# databases:
-#   - name: travel-booking-db
-#     plan: free
-#     databaseName: travel_booking
-#     user: travel_user
