@@ -5,8 +5,219 @@ const Airport = require('../models/Airport');
 const Airline = require('../models/Airline');
 const Booking = require('../models/Booking');
 const { auth } = require('../middleware/auth');
+const flightApiService = require('../services/flightApiService');
 
 const router = express.Router();
+
+// @route   GET /api/flights/multi-city
+// @desc    Search multi-city flights
+// @access  Public
+router.get('/multi-city', async (req, res) => {
+  try {
+    const {
+      airports, // comma-separated airport codes
+      dates, // comma-separated dates
+      adults = 1,
+      children = 0,
+      infants = 0,
+      class: flightClass = 'Economy',
+      currency = 'USD'
+    } = req.query;
+
+    if (!airports || !dates) {
+      return res.status(400).json({ 
+        message: 'Airports and dates are required for multi-city search' 
+      });
+    }
+
+    const airportList = airports.split(',').map(a => a.trim().toUpperCase());
+    const dateList = dates.split(',').map(d => d.trim());
+
+    if (airportList.length < 2 || dateList.length < 1) {
+      return res.status(400).json({ 
+        message: 'At least 2 airports and 1 date are required' 
+      });
+    }
+
+    const flightResults = await flightApiService.searchMultiCity({
+      airports: airportList,
+      dates: dateList,
+      adults: parseInt(adults),
+      children: parseInt(children),
+      infants: parseInt(infants),
+      cabinClass: flightClass,
+      currency
+    });
+
+    res.json({
+      success: true,
+      data: {
+        flights: flightResults.flights || [],
+        searchParams: {
+          airports: airportList,
+          dates: dateList,
+          adults: parseInt(adults),
+          children: parseInt(children),
+          infants: parseInt(infants),
+          class: flightClass,
+          currency
+        },
+        metadata: flightResults.metadata
+      }
+    });
+  } catch (error) {
+    console.error('Multi-city search error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error searching multi-city flights'
+    });
+  }
+});
+
+// @route   GET /api/flights/track
+// @desc    Track flights by route
+// @access  Public
+router.get('/track', async (req, res) => {
+  try {
+    const { date, airport1, airport2 } = req.query;
+
+    if (!date || !airport1 || !airport2) {
+      return res.status(400).json({ 
+        message: 'Date, airport1, and airport2 are required' 
+      });
+    }
+
+    // Format date as YYYYMMDD
+    const formatDateForTracking = (dateStr) => {
+      const d = new Date(dateStr);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}${month}${day}`;
+    };
+
+    const trackingData = await flightApiService.trackByRoute({
+      date: formatDateForTracking(date),
+      airport1: airport1.toUpperCase(),
+      airport2: airport2.toUpperCase()
+    });
+
+    res.json({
+      success: true,
+      data: trackingData
+    });
+  } catch (error) {
+    console.error('Flight tracking error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error tracking flights'
+    });
+  }
+});
+
+// @route   GET /api/flights/airline-info
+// @desc    Get airline flight information
+// @access  Public
+router.get('/airline-info', async (req, res) => {
+  try {
+    const { flightNumber, airlineCode, date } = req.query;
+
+    if (!flightNumber || !airlineCode || !date) {
+      return res.status(400).json({ 
+        message: 'Flight number, airline code, and date are required' 
+      });
+    }
+
+    // Format date as YYYYMMDD
+    const formatDateForAirline = (dateStr) => {
+      const d = new Date(dateStr);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}${month}${day}`;
+    };
+
+    const airlineInfo = await flightApiService.getAirlineInfo({
+      flightNumber,
+      airlineCode: airlineCode.toUpperCase(),
+      date: formatDateForAirline(date)
+    });
+
+    res.json({
+      success: true,
+      data: airlineInfo
+    });
+  } catch (error) {
+    console.error('Airline info error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error fetching airline information'
+    });
+  }
+});
+
+// @route   GET /api/flights/schedule
+// @desc    Get flight schedule for airport
+// @access  Public
+router.get('/schedule', async (req, res) => {
+  try {
+    const { mode = 'departures', iata, day = 1 } = req.query;
+
+    if (!iata) {
+      return res.status(400).json({ 
+        message: 'Airport IATA code is required' 
+      });
+    }
+
+    const schedule = await flightApiService.getSchedule({
+      mode,
+      iata: iata.toUpperCase(),
+      day: parseInt(day)
+    });
+
+    res.json({
+      success: true,
+      data: schedule
+    });
+  } catch (error) {
+    console.error('Schedule error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error fetching flight schedule'
+    });
+  }
+});
+
+// @route   GET /api/flights/search-iata
+// @desc    Search for IATA codes
+// @access  Public
+router.get('/search-iata', async (req, res) => {
+  try {
+    const { name, type = 'airline' } = req.query;
+
+    if (!name) {
+      return res.status(400).json({ 
+        message: 'Search name is required' 
+      });
+    }
+
+    const iataData = await flightApiService.searchIATA({
+      name,
+      type
+    });
+
+    res.json({
+      success: true,
+      data: iataData
+    });
+  } catch (error) {
+    console.error('IATA search error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error searching IATA codes'
+    });
+  }
+});
 
 // @route   GET /api/flights/airports
 // @desc    Search airports
@@ -30,9 +241,26 @@ router.get('/airports', async (req, res) => {
       .select('iataCode name city country countryCode')
       .limit(parseInt(limit));
 
+    // Also search using external API if available
+    let externalResults = [];
+    if (search) {
+      try {
+        const iataResults = await flightApiService.searchIATA({
+          name: search,
+          type: 'airport'
+        });
+        externalResults = iataResults.airports || [];
+      } catch (err) {
+        console.log('External airport search failed:', err.message);
+      }
+    }
+
     res.json({
       success: true,
-      data: airports
+      data: {
+        local: airports,
+        external: externalResults
+      }
     });
   } catch (error) {
     console.error(error);
@@ -41,7 +269,7 @@ router.get('/airports', async (req, res) => {
 });
 
 // @route   GET /api/flights/search
-// @desc    Search flights
+// @desc    Search flights (uses external API)
 // @access  Public
 router.get('/search', async (req, res) => {
   try {
@@ -51,8 +279,10 @@ router.get('/search', async (req, res) => {
       departureDate,
       returnDate,
       passengers = 1,
-      class: flightClass = 'economy',
-      sortBy = 'price'
+      children = 0,
+      infants = 0,
+      class: flightClass = 'Economy',
+      currency = 'USD'
     } = req.query;
 
     if (!from || !to || !departureDate) {
@@ -61,99 +291,70 @@ router.get('/search', async (req, res) => {
       });
     }
 
-    // Find airports
-    const fromAirport = await Airport.findOne({ 
-      $or: [{ iataCode: from }, { city: { $regex: from, $options: 'i' } }] 
-    });
-    const toAirport = await Airport.findOne({ 
-      $or: [{ iataCode: to }, { city: { $regex: to, $options: 'i' } }] 
-    });
-
-    if (!fromAirport || !toAirport) {
-      return res.status(400).json({ message: 'Invalid airport codes' });
-    }
-
-    const startDate = new Date(departureDate);
-    const endDate = new Date(departureDate);
-    endDate.setDate(endDate.getDate() + 1);
-
-    let query = {
-      'departure.airport': fromAirport._id,
-      'arrival.airport': toAirport._id,
-      'departure.scheduledTime': {
-        $gte: startDate,
-        $lt: endDate
-      },
-      isActive: true
+    // Convert date format to YYYY-MM-DD
+    const formatDate = (date) => {
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
     };
 
-    // Add return flights if return date is provided
-    let returnQuery = null;
+    let flightResults;
+
+    // Use appropriate API endpoint based on trip type
     if (returnDate) {
-      const returnStartDate = new Date(returnDate);
-      const returnEndDate = new Date(returnDate);
-      returnEndDate.setDate(returnEndDate.getDate() + 1);
-
-      returnQuery = {
-        'departure.airport': toAirport._id,
-        'arrival.airport': fromAirport._id,
-        'departure.scheduledTime': {
-          $gte: returnStartDate,
-          $lt: returnEndDate
-        },
-        isActive: true
-      };
-    }
-
-    // Build sort object
-    let sort = {};
-    switch (sortBy) {
-      case 'price':
-        sort = { [`pricing.${flightClass}.total`]: 1 };
-        break;
-      case 'duration':
-        sort = { duration: 1 };
-        break;
-      case 'departure':
-        sort = { 'departure.scheduledTime': 1 };
-        break;
-      default:
-        sort = { [`pricing.${flightClass}.total`]: 1 };
-    }
-
-    const flights = await Flight.find(query)
-      .populate('airline', 'name iataCode logo')
-      .populate('departure.airport', 'iataCode name city')
-      .populate('arrival.airport', 'iataCode name city')
-      .sort(sort);
-
-    let returnFlights = [];
-    if (returnQuery) {
-      returnFlights = await Flight.find(returnQuery)
-        .populate('airline', 'name iataCode logo')
-        .populate('departure.airport', 'iataCode name city')
-        .populate('arrival.airport', 'iataCode name city')
-        .sort(sort);
+      // Round-trip search
+      flightResults = await flightApiService.searchRoundTrip({
+        from: from.toUpperCase(),
+        to: to.toUpperCase(),
+        departDate: formatDate(departureDate),
+        returnDate: formatDate(returnDate),
+        adults: parseInt(passengers),
+        children: parseInt(children),
+        infants: parseInt(infants),
+        cabinClass: flightClass,
+        currency
+      });
+    } else {
+      // One-way search
+      flightResults = await flightApiService.searchOneWay({
+        from: from.toUpperCase(),
+        to: to.toUpperCase(),
+        date: formatDate(departureDate),
+        adults: parseInt(passengers),
+        children: parseInt(children),
+        infants: parseInt(infants),
+        cabinClass: flightClass,
+        currency
+      });
     }
 
     res.json({
       success: true,
       data: {
-        outbound: flights,
-        return: returnFlights,
+        flights: flightResults.flights || [],
+        airlines: flightResults.airlines || [],
+        airports: flightResults.airports || [],
+        filters: flightResults.filters || {},
         searchParams: {
-          from: fromAirport,
-          to: toAirport,
+          from,
+          to,
           departureDate,
           returnDate,
           passengers: parseInt(passengers),
-          class: flightClass
-        }
+          children: parseInt(children),
+          infants: parseInt(infants),
+          class: flightClass,
+          currency
+        },
+        metadata: flightResults.metadata
       }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Flight search error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error searching flights',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

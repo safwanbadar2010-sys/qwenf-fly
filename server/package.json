@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "test:api": "node tests/apiTest.js",
+    "test:connection": "node tests/connectionTest.js",
     "heroku-postbuild": "echo 'No build step required'"
   },
   "dependencies": {

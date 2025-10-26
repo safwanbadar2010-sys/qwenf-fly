@@ -1,128 +1,210 @@
-# 🚀 Quick Start - Deploy in 15 Minutes!
+# 🚀 QwenFly Quick Start Guide
 
-## 🎯 Super Simple Deployment (No Coding Required!)
+## ✅ What's Ready
 
-### Step 1: Get Your Code Ready (2 minutes)
-1. **Download the project files**
-2. **Extract them to a folder**
-3. **You're ready to deploy!**
+Your QwenFly travel booking platform is now integrated with:
+- ✈️ **Flight API** - Real-time flight search and booking
+- 🏨 **Hotel API** - Hotel search and reservations
+- 🔑 **API Keys Configured** - Ready to use immediately
 
-### Step 2: Create Accounts (5 minutes)
-1. **GitHub**: [github.com](https://github.com) - Sign up free
-2. **MongoDB**: [mongodb.com/cloud/atlas](https://mongodb.com/cloud/atlas) - Sign up free
-3. **Heroku**: [heroku.com](https://heroku.com) - Sign up free
-4. **Vercel**: [vercel.com](https://vercel.com) - Sign up with GitHub
+## 📋 Prerequisites
 
-### Step 3: Upload to GitHub (3 minutes)
-1. **Go to GitHub.com**
-2. **Click "New repository"**
-3. **Name it**: `travel-booking`
-4. **Click "Create repository"**
-5. **Upload all your files**
-6. **Click "Commit changes"**
+- Node.js 16+ installed
+- npm package manager
+- MongoDB (optional - can use MongoDB Atlas)
 
-### Step 4: Set Up Database (3 minutes)
-1. **Go to MongoDB Atlas**
-2. **Click "Build a Database"**
-3. **Choose "M0 Sandbox" (Free)**
-4. **Click "Create Cluster"**
-5. **Wait 2 minutes for it to be ready**
-6. **Click "Connect" → "Connect your application"**
-7. **Copy the connection string**
-8. **Replace `<password>` with `TravelPassword123!`**
+## 🏃 Quick Start (3 Steps)
 
-### Step 5: Deploy Backend (3 minutes)
-1. **Go to Heroku.com**
-2. **Click "New" → "Create new app"**
-3. **Name it**: `your-app-name-123`
-4. **Click "Create app"**
-5. **Go to "Settings" tab**
-6. **Click "Reveal Config Vars"**
-7. **Add these variables**:
-   ```
-   MONGODB_URI = mongodb+srv://traveluser:TravelPassword123!@cluster0.xxxxx.mongodb.net/travel-booking
-   JWT_SECRET = your_super_secret_key_12345
-   NODE_ENV = production
-   ```
-8. **Go to "Deploy" tab**
-9. **Connect to GitHub**
-10. **Select your repository**
-11. **Click "Deploy Branch"**
-12. **Wait for deployment**
+### Step 1: Install Dependencies
 
-### Step 6: Deploy Frontend (2 minutes)
-1. **Go to Vercel.com**
-2. **Click "New Project"**
-3. **Import from GitHub**
-4. **Select your repository**
-5. **Set Root Directory**: `client`
-6. **Add Environment Variable**:
-   - Name: `REACT_APP_API_URL`
-   - Value: `https://your-app-name-123.herokuapp.com/api`
-7. **Click "Deploy"**
+```bash
+# Navigate to server directory
+cd server
 
-### Step 7: Update Backend URL (1 minute)
-1. **Go back to Heroku**
-2. **Settings → Config Vars**
-3. **Add**:
-   ```
-   CLIENT_URL = https://your-project-name.vercel.app
-   ```
-4. **Restart the app**
+# Install all dependencies
+npm install
+```
 
-## 🎉 Done! Your App is Live!
+### Step 2: Verify Configuration
 
-### Your Travel Booking Platform:
-- **Frontend**: `https://your-project-name.vercel.app`
-- **Backend**: `https://your-app-name-123.herokuapp.com`
+The `.env` file is already configured with API keys. Just verify:
 
-### Features:
-- ✈️ Flight booking
-- 🏨 Hotel booking
-- 🚗 Cab booking
-- 📦 Travel packages
-- 💳 Payment processing
-- 👤 User accounts
-- 📱 Mobile responsive
+```bash
+# Check if .env exists
+dir .env
+```
 
-## 🔧 If Something Goes Wrong:
+**✓ API Keys Already Configured:**
+- Flight API: `68fd119661ff8c44dc9282a8`
+- Hotel API: `68fd19f9017cce84938927c8`
 
-### Backend Issues:
-- Check Heroku logs in dashboard
-- Verify MongoDB connection string
-- Make sure all environment variables are set
+### Step 3: Start the Server
 
-### Frontend Issues:
-- Check Vercel dashboard for errors
-- Verify API URL is correct
-- Make sure backend is running
+```bash
+# Development mode (with auto-reload)
+npm run dev
 
-### Database Issues:
-- Check MongoDB Atlas network access
-- Verify username and password
-- Ensure connection string is correct
+# OR Production mode
+npm start
+```
 
-## 🎊 Success!
+**Server will start on:** `http://localhost:5000`
 
-You now have a professional travel booking platform running on free tiers!
+## 🧪 Test the APIs
 
-**Share your live website with friends and family!** 🚀
+### Option 1: Run Automated Tests
+
+```bash
+npm run test:api
+```
+
+This will test all API endpoints and show you the results.
+
+### Option 2: Manual Testing with cURL
+
+#### Test Flight Search
+```powershell
+curl "http://localhost:5000/api/flights/search?from=NYC&to=LAX&departureDate=2024-06-15&passengers=1&class=Economy&currency=USD"
+```
+
+#### Test Hotel Search
+```powershell
+curl "http://localhost:5000/api/hotels/search?cityId=60763&checkIn=2024-06-15&checkOut=2024-06-16&rooms=1&guests=2&currency=USD"
+```
+
+### Option 3: Use API Testing Tools
+
+**Postman/Thunder Client:**
+1. Create new GET request
+2. URL: `http://localhost:5000/api/flights/search`
+3. Add query parameters:
+   - `from`: NYC
+   - `to`: LAX
+   - `departureDate`: 2024-06-15
+   - `passengers`: 1
+   - `class`: Economy
+   - `currency`: USD
+4. Send request
+
+## 📚 Available Endpoints
+
+### ✈️ Flight Endpoints
+
+| Endpoint | Description | Example |
+|----------|-------------|---------|
+| `GET /api/flights/search` | Search flights | `?from=NYC&to=LAX&departureDate=2024-06-15` |
+| `GET /api/flights/multi-city` | Multi-city search | `?airports=NYC,LAX,SFO&dates=2024-06-15,2024-06-20` |
+| `GET /api/flights/track` | Track flights | `?date=2024-06-15&airport1=NYC&airport2=LAX` |
+| `GET /api/flights/schedule` | Airport schedule | `?iata=JFK&mode=departures` |
+| `GET /api/flights/search-iata` | Search IATA codes | `?name=american&type=airline` |
+
+### 🏨 Hotel Endpoints
+
+| Endpoint | Description | Example |
+|----------|-------------|---------|
+| `GET /api/hotels/search` | Search hotels | `?cityId=60763&checkIn=2024-06-15&checkOut=2024-06-16` |
+| `GET /api/hotels/:id` | Hotel details | `/4232686?checkIn=2024-06-15&checkOut=2024-06-16` |
+| `GET /api/hotels/booking-info/:id` | Booking info | `/the-lenox?checkIn=2024-06-15&checkOut=2024-06-16` |
+| `GET /api/hotels/map-name` | Map hotel name | `?name=the%20lenox` |
+
+## 🎯 Next Steps
+
+### 1. Update Frontend (Optional)
+
+If you want to connect the frontend:
+
+```bash
+# Navigate to client directory
+cd ../client
+
+# Install dependencies
+npm install
+
+# Update API URL in .env file
+echo REACT_APP_API_URL=http://localhost:5000/api > .env
+
+# Start frontend
+npm start
+```
+
+Frontend will run on: `http://localhost:3000`
+
+### 2. Deploy to Production
+
+Choose your platform:
+
+#### **Railway** (Recommended)
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login and deploy
+railway login
+railway init
+railway up
+```
+
+#### **Render**
+- Push code to GitHub
+- Connect repository in Render dashboard
+- Environment variables are already in `render.yaml`
+
+#### **Heroku**
+```bash
+heroku create qwenfly-api
+git push heroku main
+```
+
+## 📖 Documentation
+
+- **Full API Guide:** See `API_INTEGRATION_GUIDE.md`
+- **Deployment Details:** See `API_INTEGRATION_GUIDE.md` (Deployment section)
+
+## 🔧 Troubleshooting
+
+### Server won't start?
+```bash
+# Check if port 5000 is available
+netstat -ano | findstr :5000
+
+# Use different port
+set PORT=3001
+npm start
+```
+
+### API returns errors?
+```bash
+# Verify API keys
+cat .env | findstr API_KEY
+
+# Check server logs
+npm run dev
+```
+
+### Database connection issues?
+```bash
+# Use MongoDB Atlas (free tier)
+# Update MONGODB_URI in .env file
+```
+
+## 💡 Tips
+
+1. **API Rate Limits:** Be mindful of API rate limits in production
+2. **Caching:** Consider implementing caching for frequently searched routes
+3. **Error Handling:** All errors are logged for debugging
+4. **Security:** API keys are in `.env` - never commit this file to Git
+
+## 🎉 You're Ready!
+
+Your backend is now fully integrated with external Flight and Hotel APIs!
+
+**Test it now:**
+```bash
+npm run test:api
+```
+
+For detailed API documentation, see `API_INTEGRATION_GUIDE.md`
 
 ---
 
-## 📱 Test Your App:
-
-1. **Visit your frontend URL**
-2. **Try to register**
-3. **Search for flights**
-4. **Test booking process**
-5. **Everything should work!**
-
-## 🔄 Making Updates:
-
-1. **Edit your code**
-2. **Upload to GitHub**
-3. **Frontend updates automatically**
-4. **Backend**: Go to Heroku → Deploy → Deploy Branch
-
-**You're now a web developer!** 🎉
+**Questions?** Check the logs or refer to the full documentation.

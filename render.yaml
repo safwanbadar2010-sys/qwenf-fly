@@ -38,6 +38,14 @@ services:
         value: 10000
       - key: CLIENT_URL
         value: https://travel-booking-frontend.vercel.app
+      - key: FLIGHT_API_KEY
+        value: 68fd119661ff8c44dc9282a8
+      - key: FLIGHT_API_BASE_URL
+        value: https://api.flightapi.io
+      - key: HOTEL_API_KEY
+        value: 68fd19f9017cce84938927c8
+      - key: HOTEL_API_BASE_URL
+        value: https://api.makcorps.com
 
   - type: web
     name: travel-booking-frontend

@@ -3,112 +3,133 @@ const { body, validationResult } = require('express-validator');
 const Hotel = require('../models/Hotel');
 const Booking = require('../models/Booking');
 const { auth } = require('../middleware/auth');
+const hotelApiService = require('../services/hotelApiService');
 
 const router = express.Router();
 
 // @route   GET /api/hotels/search
-// @desc    Search hotels
+// @desc    Search hotels (uses external API)
 // @access  Public
 router.get('/search', async (req, res) => {
   try {
     const {
       city,
-      country,
+      cityId,
+      query,
       checkIn,
       checkOut,
-      guests = 1,
+      guests = 2,
       rooms = 1,
-      minPrice,
-      maxPrice,
-      starRating,
-      amenities,
-      sortBy = 'rating'
+      children = 0,
+      currency = 'USD'
     } = req.query;
 
-    if (!city || !checkIn || !checkOut) {
+    if (!checkIn || !checkOut) {
       return res.status(400).json({ 
-        message: 'City, check-in, and check-out dates are required' 
+        message: 'Check-in and check-out dates are required' 
       });
     }
 
-    let query = {
-      isActive: true,
-      $or: [
-        { 'address.city': { $regex: city, $options: 'i' } },
-        { 'address.country': { $regex: country, $options: 'i' } }
-      ]
+    // Format date as YYYY-MM-DD
+    const formatDate = (date) => {
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
     };
 
-    // Add filters
-    if (starRating) {
-      query.starRating = { $gte: parseInt(starRating) };
-    }
+    let hotelResults;
 
-    if (amenities) {
-      const amenityArray = amenities.split(',');
-      query.amenities = { $in: amenityArray };
-    }
-
-    // Build sort object
-    let sort = {};
-    switch (sortBy) {
-      case 'price':
-        sort = { 'rooms.pricing.total': 1 };
-        break;
-      case 'rating':
-        sort = { averageRating: -1 };
-        break;
-      case 'name':
-        sort = { name: 1 };
-        break;
-      default:
-        sort = { averageRating: -1 };
-    }
-
-    const hotels = await Hotel.find(query)
-      .select('name description address starRating amenities images rooms pricing averageRating totalReviews')
-      .sort(sort);
-
-    // Filter by price range if specified
-    let filteredHotels = hotels;
-    if (minPrice || maxPrice) {
-      filteredHotels = hotels.filter(hotel => {
-        const roomPrices = hotel.rooms.map(room => room.pricing.total);
-        const minRoomPrice = Math.min(...roomPrices);
-        const maxRoomPrice = Math.max(...roomPrices);
-        
-        if (minPrice && minRoomPrice < parseInt(minPrice)) return false;
-        if (maxPrice && maxRoomPrice > parseInt(maxPrice)) return false;
-        return true;
+    // Use different search methods based on parameters
+    if (cityId) {
+      // Search by city ID
+      hotelResults = await hotelApiService.searchByCity({
+        cityId,
+        checkIn: formatDate(checkIn),
+        checkOut: formatDate(checkOut),
+        rooms: parseInt(rooms),
+        adults: parseInt(guests),
+        children: parseInt(children),
+        currency
+      });
+    } else if (query || city) {
+      // Search by name or location
+      hotelResults = await hotelApiService.searchHotels({
+        query: query || city,
+        checkIn: formatDate(checkIn),
+        checkOut: formatDate(checkOut),
+        rooms: parseInt(rooms),
+        adults: parseInt(guests),
+        currency
+      });
+    } else {
+      return res.status(400).json({ 
+        message: 'City, cityId, or search query is required' 
       });
     }
 
     res.json({
       success: true,
       data: {
-        hotels: filteredHotels,
+        hotels: hotelResults.hotels || [],
+        filters: hotelResults.filters || {},
         searchParams: {
-          city,
-          country,
+          city: city || query,
+          cityId,
           checkIn,
           checkOut,
           guests: parseInt(guests),
-          rooms: parseInt(rooms)
-        }
+          rooms: parseInt(rooms),
+          children: parseInt(children),
+          currency
+        },
+        metadata: hotelResults.metadata
       }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Hotel search error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error searching hotels',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
 // @route   GET /api/hotels/:id
-// @desc    Get hotel details
+// @desc    Get hotel details (uses external API)
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
-    const hotel = await Hotel.findById(req.params.id)
+    const { checkIn, checkOut, rooms = 1, adults = 1, children = 0 } = req.query;
+    const hotelId = req.params.id;
+
+    // If dates are provided, fetch from external API
+    if (checkIn && checkOut) {
+      const formatDate = (date) => {
+        const d = new Date(date);
+        return d.toISOString().split('T')[0];
+      };
+
+      const hotelDetails = await hotelApiService.getHotelDetails({
+        hotelId,
+        checkIn: formatDate(checkIn),
+        checkOut: formatDate(checkOut),
+        rooms: parseInt(rooms),
+        adults: parseInt(adults),
+        children: parseInt(children)
+      });
+
+      return res.json({
+        success: true,
+        data: hotelDetails.hotel,
+        rooms: hotelDetails.rooms,
+        amenities: hotelDetails.amenities,
+        images: hotelDetails.images,
+        metadata: hotelDetails.metadata
+      });
+    }
+
+    // Fallback to local database
+    const hotel = await Hotel.findById(hotelId)
       .populate('reviews.user', 'firstName lastName');
 
     if (!hotel) {
@@ -120,8 +141,143 @@ router.get('/:id', async (req, res) => {
       data: hotel
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Hotel details error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error fetching hotel details'
+    });
+  }
+});
+
+// @route   GET /api/hotels/booking-info/:hotelId
+// @desc    Get hotel booking information
+// @access  Public
+router.get('/booking-info/:hotelId', async (req, res) => {
+  try {
+    const { country = 'us', checkIn, checkOut, rooms = 1, adults = 2, kids = 0, currency = 'USD' } = req.query;
+    const hotelId = req.params.hotelId;
+
+    if (!checkIn || !checkOut) {
+      return res.status(400).json({ 
+        message: 'Check-in and check-out dates are required' 
+      });
+    }
+
+    const formatDate = (date) => {
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
+    };
+
+    const bookingInfo = await hotelApiService.getBookingInfo({
+      country,
+      hotelId,
+      checkIn: formatDate(checkIn),
+      checkOut: formatDate(checkOut),
+      rooms: parseInt(rooms),
+      adults: parseInt(adults),
+      kids: parseInt(kids),
+      currency
+    });
+
+    res.json({
+      success: true,
+      data: bookingInfo
+    });
+  } catch (error) {
+    console.error('Booking info error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error fetching booking information'
+    });
+  }
+});
+
+// @route   GET /api/hotels/expedia/:hotelId
+// @desc    Get Expedia hotel data
+// @access  Public
+router.get('/expedia/:hotelId', async (req, res) => {
+  try {
+    const { checkIn, checkOut, rooms = 1, adults = 2, currency = 'USD' } = req.query;
+    const hotelId = req.params.hotelId;
+
+    if (!checkIn || !checkOut) {
+      return res.status(400).json({ 
+        message: 'Check-in and check-out dates are required' 
+      });
+    }
+
+    const formatDate = (date) => {
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
+    };
+
+    const expediaData = await hotelApiService.getExpediaHotel({
+      hotelId,
+      checkIn: formatDate(checkIn),
+      checkOut: formatDate(checkOut),
+      rooms: parseInt(rooms),
+      adults: parseInt(adults),
+      currency
+    });
+
+    res.json({
+      success: true,
+      data: expediaData
+    });
+  } catch (error) {
+    console.error('Expedia hotel error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error fetching Expedia hotel data'
+    });
+  }
+});
+
+// @route   GET /api/hotels/map-name
+// @desc    Map hotel name to ID
+// @access  Public
+router.get('/map-name', async (req, res) => {
+  try {
+    const { name } = req.query;
+
+    if (!name) {
+      return res.status(400).json({ 
+        message: 'Hotel name is required' 
+      });
+    }
+
+    const mappingData = await hotelApiService.mapHotelName({ name });
+
+    res.json({
+      success: true,
+      data: mappingData
+    });
+  } catch (error) {
+    console.error('Hotel mapping error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error mapping hotel name'
+    });
+  }
+});
+
+// @route   GET /api/hotels/account
+// @desc    Get API account information
+// @access  Private
+router.get('/account', auth, async (req, res) => {
+  try {
+    const accountInfo = await hotelApiService.getAccountInfo();
+
+    res.json({
+      success: true,
+      data: accountInfo
+    });
+  } catch (error) {
+    console.error('Account info error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: error.message || 'Error fetching account information'
+    });
   }
 });
 
