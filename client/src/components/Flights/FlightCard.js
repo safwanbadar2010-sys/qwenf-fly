@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiPlane, FiClock, FiMapPin, FiUsers, FiArrowRight } from 'react-icons/fi';
+import { FiClock, FiMapPin, FiUsers, FiArrowRight } from 'react-icons/fi';
+import { FaPlane } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 const FlightCard = ({ flight, searchParams }) => {
@@ -53,7 +54,7 @@ const FlightCard = ({ flight, searchParams }) => {
             {flight.airline?.logo ? (
               <img src={flight.airline.logo} alt={flight.airline.name} className="w-8 h-8" />
             ) : (
-              <FiPlane className="w-6 h-6 text-gray-600" />
+              <FaPlane className="w-6 h-6 text-gray-600" />
             )}
           </div>
           <div>

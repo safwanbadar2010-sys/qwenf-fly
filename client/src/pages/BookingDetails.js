@@ -2,7 +2,8 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { api, endpoints } from '../utils/api';
-import { FiArrowLeft, FiCalendar, FiDollarSign, FiUser, FiPlane, FiHome, FiCar, FiPackage } from 'react-icons/fi';
+import { FiArrowLeft, FiCalendar, FiDollarSign, FiUser, FiHome, FiCar, FiPackage } from 'react-icons/fi';
+import { FaPlane } from 'react-icons/fa';
 import LoadingSkeleton from '../components/UI/LoadingSkeleton';
 
 const BookingDetails = () => {
@@ -19,7 +20,7 @@ const BookingDetails = () => {
 
   const getTypeIcon = (type) => {
     const iconMap = {
-      flight: FiPlane,
+      flight: FaPlane,
       hotel: FiHome,
       cab: FiCar,
       package: FiPackage

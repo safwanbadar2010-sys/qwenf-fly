@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiSearch, FiMapPin, FiCalendar, FiUsers, FiStar, FiArrowRight } from 'react-icons/fi';
+import { FiSearch, FiMapPin, FiCalendar, FiUsers, FiStar, FiArrowRight, FiPackage } from 'react-icons/fi';
 import { FaPlane, FaHotel, FaCar, FaBox, FaGlobe, FaHeart, FaShieldAlt, FaHeadset } from 'react-icons/fa';
 import SearchForm from '../components/Search/SearchForm';
 import PopularDestinations from '../components/Home/PopularDestinations';
@@ -208,7 +208,7 @@ const Home = () => {
                 to="/flights"
                 className="btn bg-white text-blue-600 hover:bg-gray-100"
               >
-                <FiPlane className="w-5 h-5" />
+                <FaPlane className="w-5 h-5" />
                 Book a Flight
               </Link>
               <Link

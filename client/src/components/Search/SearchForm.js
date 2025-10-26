@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiSearch, FiMapPin, FiCalendar, FiUsers, FiPlane, FiHome, FiCar, FiPackage } from 'react-icons/fi';
+import { FiSearch, FiMapPin, FiCalendar, FiUsers, FiHome, FiCar, FiPackage } from 'react-icons/fi';
+import { FaPlane } from 'react-icons/fa';
 import { useBooking } from '../../contexts/BookingContext';
 
 const SearchForm = () => {
@@ -8,7 +9,7 @@ const SearchForm = () => {
   const { updateSearchParams } = useBooking();
 
   const tabs = [
-    { id: 'flights', name: 'Flights', icon: FiPlane, color: 'text-blue-600' },
+    { id: 'flights', name: 'Flights', icon: FaPlane, color: 'text-blue-600' },
     { id: 'hotels', name: 'Hotels', icon: FiHome, color: 'text-green-600' },
     { id: 'cabs', name: 'Cabs', icon: FiCar, color: 'text-purple-600' },
     { id: 'packages', name: 'Packages', icon: FiPackage, color: 'text-orange-600' }

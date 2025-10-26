@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { api, endpoints } from '../utils/api';
-import { FiSearch, FiFilter, FiSortAsc, FiPlane, FiClock, FiMapPin } from 'react-icons/fi';
+import { FiSearch, FiFilter, FiSortAsc, FiClock, FiMapPin } from 'react-icons/fi';
+import { FaPlane } from 'react-icons/fa';
 import FlightCard from '../components/Flights/FlightCard';
 import SearchFilters from '../components/Flights/SearchFilters';
 import LoadingSkeleton from '../components/UI/LoadingSkeleton';
@@ -166,7 +167,7 @@ const Flights = () => {
             ) : error ? (
               <div className="card p-8 text-center">
                 <div className="text-red-500 mb-4">
-                  <FiPlane className="w-12 h-12 mx-auto" />
+                  <FaPlane className="w-12 h-12 mx-auto" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">No flights found</h3>
                 <p className="text-gray-600">Try adjusting your search criteria</p>
@@ -234,7 +235,7 @@ const Flights = () => {
             ) : (
               <div className="card p-8 text-center">
                 <div className="text-gray-400 mb-4">
-                  <FiPlane className="w-12 h-12 mx-auto" />
+                  <FaPlane className="w-12 h-12 mx-auto" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Start your search</h3>
                 <p className="text-gray-600">Enter your travel details to find the best flights</p>

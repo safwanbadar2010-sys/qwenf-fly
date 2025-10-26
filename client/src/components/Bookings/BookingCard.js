@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiPlane, FiHome, FiCar, FiPackage, FiCalendar, FiDollarSign, FiEye, FiX } from 'react-icons/fi';
+import { FiHome, FiCar, FiPackage, FiCalendar, FiDollarSign, FiEye, FiX } from 'react-icons/fi';
+import { FaPlane } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 
 const BookingCard = ({ booking }) => {
@@ -8,7 +9,7 @@ const BookingCard = ({ booking }) => {
 
   const getTypeIcon = (type) => {
     const iconMap = {
-      flight: FiPlane,
+      flight: FaPlane,
       hotel: FiHome,
       cab: FiCar,
       package: FiPackage

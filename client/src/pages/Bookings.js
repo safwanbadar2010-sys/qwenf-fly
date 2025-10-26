@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { api, endpoints } from '../utils/api';
-import { FiSearch, FiFilter, FiCalendar, FiPlane, FiHome, FiCar, FiPackage, FiEye, FiX } from 'react-icons/fi';
+import { FiSearch, FiFilter, FiCalendar, FiHome, FiCar, FiPackage, FiEye, FiX } from 'react-icons/fi';
+import { FaPlane } from 'react-icons/fa';
 import BookingCard from '../components/Bookings/BookingCard';
 import LoadingSkeleton from '../components/UI/LoadingSkeleton';
 
@@ -44,7 +45,7 @@ const Bookings = () => {
 
   const getTypeIcon = (type) => {
     const iconMap = {
-      flight: FiPlane,
+      flight: FaPlane,
       hotel: FiHome,
       cab: FiCar,
       package: FiPackage
@@ -90,7 +91,7 @@ const Bookings = () => {
                     {stats.bookingsByType?.find(b => b._id === 'flight')?.count || 0}
                   </p>
                 </div>
-                <FiPlane className="w-8 h-8 text-blue-600" />
+                <FaPlane className="w-8 h-8 text-blue-600" />
               </div>
             </div>
             <div className="card p-6">
