@@ -3,15 +3,13 @@ services:
     name: travel-booking-api
     env: node
     plan: free
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
     envVars:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        fromDatabase:
-          name: travel-booking-db
-          property: connectionString
+        value: mongodb+srv://qwenfly:Wd9AIAr623wWjCM4@qwenfly-cluster.kpz94eq.mongodb.net/travel-booking?retryWrites=true&w=majority
       - key: JWT_SECRET
         value: your_jwt_secret_key_here
       - key: JWT_EXPIRE
@@ -57,8 +55,9 @@ services:
       - key: REACT_APP_API_URL
         value: https://travel-booking-api.onrender.com/api
 
-databases:
-  - name: travel-booking-db
-    plan: free
-    databaseName: travel_booking
-    user: travel_user
+# Using MongoDB Atlas instead of Render's database
+# databases:
+#   - name: travel-booking-db
+#     plan: free
+#     databaseName: travel_booking
+#     user: travel_user
